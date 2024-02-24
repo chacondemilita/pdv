@@ -6,6 +6,8 @@ from kivy.properties import BooleanProperty
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
+from kivy.uix.popup import Popup
+
 
 inventario=[
 	{'codigo': '111', 'nombre': 'leche 1L', 'precio': 20.0, 'cantidad': 20},
@@ -79,6 +81,11 @@ class RV(RecycleView):
         else:
             self.data.append(articulo)
 
+
+class ProductoPorNombrePopup(Popup):
+      	def __init__(self, **kwargs):
+            super(ProductoPorNombrePopup, self).__init__(**kwargs)
+
 class VentasWindow(BoxLayout):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -100,7 +107,9 @@ class VentasWindow(BoxLayout):
 
 
 	def agregar_producto_nombre(self, nombre):
-		print("Se mando", nombre)
+		self.ids.buscar_nombre.text=''
+		popup= ProductoPorNombrePopup()
+		popup.open()
 
 	def agregar_producto(self, articulo):
             self.total+=articulo['precio']
