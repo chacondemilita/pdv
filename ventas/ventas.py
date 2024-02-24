@@ -2,7 +2,6 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.uix.label import Label
 from kivy.properties import BooleanProperty
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.behaviors import FocusBehavior
@@ -23,23 +22,28 @@ inventario=[
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
                                  RecycleBoxLayout):
     ''' Adds selection and focus behavior to the view. '''
+touch_deselect_last = BooleanProperty(True)
 
 
-class SelectableLabel(RecycleDataViewBehavior, Label):
+class SelectableBoxLayaout(RecycleDataViewBehavior, BoxLayout):
     ''' Add selection support to the Label '''
     index = None
     selected = BooleanProperty(False)
     selectable = BooleanProperty(True)
 
     def refresh_view_attrs(self, rv, index, data):
-        ''' Catch and handle the view changes '''
         self.index = index
-        return super(SelectableLabel, self).refresh_view_attrs(
-            rv, index, data)
+        self.ids['_hashtag'].text = str(1+index)
+        self.ids['_articulo'].text = data['nombre'].capitalize()
+        self.ids['_cantidad'].text = str(data['cantidad_carrito'])
+        self.ids['_precio_por_articulo'].text = str("{:.2f}".format(data['precio']))
+        self.ids['_precio'].text = str("{:.2f}".format(data['precio_total']))
+        return super(SelectableBoxLayaout, self).refresh_view_attrs(
+			rv, index, data)
 
     def on_touch_down(self, touch):
         ''' Add selection on touch down '''
-        if super(SelectableLabel, self).on_touch_down(touch):
+        if super(SelectableBoxLayaout, self).on_touch_down(touch):
             return True
         if self.collide_point(*touch.pos) and self.selectable:
             return self.parent.select_with_touch(self.index, touch)
@@ -53,29 +57,62 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
             print("selection removed for {0}".format(rv.data[index]))
 
 
+
 class RV(RecycleView):
     def __init__(self, **kwargs):
         super(RV, self).__init__(**kwargs)
-        self.data = [{'text': str(x)} for x in range(100)]
+        self.data = []
+
+    def agregar_articulo(self, articulo):
+        articulo['seleccionado']=False
+        indice=-1
+        if self.data:
+            for i in range(len(self.data)):
+                if articulo['codigo']==self.data[i]['codigo']:
+                   indice=i
+            if indice >=0:
+                self.data[indice]['cantidad_carrito']+=1
+                self.data[indice]['precio_total']=self.data[indice]['precio']*self.data[indice]['cantidad_carrito']
+                self.refresh_from_data()
+            else:
+                self.data.append(articulo)
+        else:
+            self.data.append(articulo)
+
 class VentasWindow(BoxLayout):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-
+		self.total=0.0
+            
 	def agregar_producto_codigo(self, codigo):
 		for producto in inventario:
 			if codigo==producto['codigo']:
-				print("Encontrado, producto", producto)
+				articulo={}
+				articulo['codigo']=producto['codigo']
+				articulo['nombre']=producto['nombre']
+				articulo['precio']=producto['precio']
+				articulo['cantidad_carrito']=1
+				articulo['cantidad_inventario']=producto['cantidad']
+				articulo['precio_total']=producto['precio']
+				self.agregar_producto(articulo)
+				self.ids.buscar_codigo.text=''
 				break
+
 
 	def agregar_producto_nombre(self, nombre):
 		print("Se mando", nombre)
+
+	def agregar_producto(self, articulo):
+            self.total+=articulo['precio']
+            self.ids.sub_total.text= '€'+"{:.2f}".format(self.total)
+            self.ids.rvs.agregar_articulo(articulo)
 
 	def eliminar_producto(self):
 		print("eliminar_producto presionado")
 
 	def modificar_producto(self):
 		print("eliminar_producto presionado")
-		
+
 	def pagar(self):
 		print("pagar")
 
