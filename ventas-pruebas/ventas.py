@@ -92,6 +92,7 @@ class RV(RecycleView):
     def __init__(self, **kwargs):
         super(RV, self).__init__(**kwargs)
         self.data = []
+        self.modificar_producto=None
 
     def agregar_articulo(self, articulo):
         articulo['seleccionado']=False
@@ -108,6 +109,37 @@ class RV(RecycleView):
                 self.data.append(articulo)
         else:
             self.data.append(articulo)
+
+    def eliminar_articulo(self):
+        indice=self.articulo_seleccionado()
+        precio=0
+        if indice>=0:
+            self._layout_manager.deselect_node(self._layout_manager._last_selected_node)
+            precio=self.data[indice]['precio_total']
+            self.data.pop(indice)
+            self.refresh_from_data()
+        return precio
+
+    def modificar_articulo(self):
+        indice=self.articulo_seleccionado()
+        if indice>=0:
+            popup=CambiarCantidadPopup(self.data[indice], self.actualizar_articulo)
+            popup.open()
+
+    def actualizar_articulo(self, valor):
+        indice=self.articulo_seleccionado()
+        if indice>=0:
+            if valor==0:
+                self.data.pop(indice)
+                self._layout_manager.deselect_node(self._layout_manager._last_selected_node)
+            else:
+                self.data[indice]['cantidad_carrito']=valor
+                self.data[indice]['precio_total']=self.data[indice]['precio']*valor
+            self.refresh_from_data()
+            nuevo_total=0
+            for data in self.data:
+                nuevo_total+=data['precio_total']
+            self.modificar_producto(False, nuevo_total)
 
     def articulo_seleccionado(self):
         indice=-1
@@ -146,12 +178,29 @@ class ProductoPorNombrePopup(Popup):
 				self.agregar_producto(articulo)
 			self.dismiss()
 
+class CambiarCantidadPopup(Popup):
+	def __init__(self, data, actualizar_articulo_callback, **kwargs):
+		super(CambiarCantidadPopup, self).__init__(**kwargs)
+		self.data=data
+		self.actualizar_articulo=actualizar_articulo_callback
+		self.ids.info_nueva_cant_1.text = "Producto: " + self.data['nombre'].capitalize()
+		self.ids.info_nueva_cant_2.text = "Cantidad: "+str(self.data['cantidad_carrito'])
+
+	def validar_input(self, texto_input):
+		try:
+			nueva_cantidad=int(texto_input)
+			self.ids.notificacion_no_valido.text=''
+			self.actualizar_articulo(nueva_cantidad)
+			self.dismiss()
+		except:
+			self.ids.notificacion_no_valido.text='Cantidad no valida'
 
 
 class VentasWindow(BoxLayout):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.total=0.0
+		self.ids.rvs.modificar_producto=self.modificar_producto
 
 	def agregar_producto_codigo(self, codigo):
 		for producto in inventario:
@@ -179,10 +228,16 @@ class VentasWindow(BoxLayout):
 
 
 	def eliminar_producto(self):
-		print("eliminar_producto presionado")
+		menos_precio=self.ids.rvs.eliminar_articulo()
+		self.total-=menos_precio
+		self.ids.sub_total.text='$ '+"{:.2f}".format(self.total)
 
-	def modificar_producto(self):
-		print("eliminar_producto presionado")
+	def modificar_producto(self, cambio=True, nuevo_total=None):
+		if cambio:	
+			self.ids.rvs.modificar_articulo()
+		else:
+			self.total=nuevo_total
+			self.ids.sub_total.text='$ '+"{:.2f}".format(self.total)
 
 	def pagar(self):
 		print("pagar")

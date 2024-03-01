@@ -106,6 +106,31 @@
 				text: 'Salir'
 				on_release: root.dismiss()
 
+<CambiarCantidadPopup>:
+	size_hint: .5, .5
+	title: 'Cambiar Cantidad'
+	auto_dismiss: False
+	BoxLayout:
+		orientation: 'vertical'
+		BoxLayout:
+			Label:
+				id: info_nueva_cant_1
+			Label:
+				id: info_nueva_cant_2
+		Label:
+			id: notificacion_no_valido
+		TextInput:
+			id: nueva_cant_texto
+			multiline: False
+			hint_text: 'Nueva Cantidad'
+		Button:
+			id: nueva_cant_boton
+			text: 'Aceptar'
+	    	on_release: root.validar_input(root.ids.nueva_cant_texto.text)
+		Button:
+			text: 'Salir sin hacer cambios'
+			on_release: root.dismiss()
+
 <VentasWindow>:
 	canvas.before:
 		Color:
@@ -248,7 +273,7 @@
 				orientation: 'vertical'
 				spacing: .5
 				Label:
-					id: notificacion_fall
+					id: notificacion_falla
 					size_hint_y: .25
 				Label:
 					id: notificacion_exito
