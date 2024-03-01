@@ -131,6 +131,72 @@
 			text: 'Salir sin hacer cambios'
 			on_release: root.dismiss()
 
+<PagarPopup>:
+	size_hint: .4, .5
+	title: 'Pagar'
+	BoxLayout:
+		orientation: 'vertical'
+		spacing: .5
+		padding: .5
+		BoxLayout:
+			size_hint_y: .25
+			Label: 
+				size_hint_x: .5
+				text: 'Total a Pagar: '
+			Label:
+				id: total
+				size_hint_x: .5
+		BoxLayout:
+			size_hint_y: .25
+			Label:
+				size_hint_x: .5
+				text: 'Recibido: '
+			BoxLayout:
+				size_hint_x: .5
+				orientation: 'vertical'
+				TextInput:
+					id: recibido
+					hint_text: 'Cantidad recibida'
+					multiline: False
+					on_text_validate: root.mostrar_cambio()
+				Button:
+					text: 'Aceptar'
+					on_release: root.mostrar_cambio()
+		BoxLayout:
+			size_hint_y: .25
+			Label:
+				size_hint_x: .5
+				text: 'Cambio: '
+			Label:
+				id: cambio
+				size_hint_x: .5
+		BoxLayout:
+			size_hint_y: .25
+			Button: 
+				id: boton_pagar
+				disabled: True
+				text: 'Terminar Pago'
+				on_release: root.pagado()
+			Button:
+				text: 'Cancelar'
+				on_release: root.dismiss()
+
+<NuevaCompraPopup>:
+	size_hint: .3, .3
+	title: 'Cancelar Compra'
+	BoxLayout:
+		orientation: 'vertical'
+		Label: 
+			text: '¿Realizar nueva compra?'
+		BoxLayout:
+			Button: 
+				id: aceptar
+				text: 'Sí'
+				on_release: root.nueva_compra(True)
+			Button:
+				text: 'No'
+				on_release: root.dismiss()
+
 <VentasWindow>:
 	canvas.before:
 		Color:
@@ -275,9 +341,11 @@
 				Label:
 					id: notificacion_falla
 					size_hint_y: .25
+					color: hex('#9B0303')
 				Label:
 					id: notificacion_exito
 					size_hint_y: .25
+					color: hex('#039B1E')
 				BotonOscuro:
 					size_hint_y: .25
 					id: pagar

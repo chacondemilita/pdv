@@ -196,6 +196,33 @@ class CambiarCantidadPopup(Popup):
             self.ids.notificacion_no_valido.text='Cantidad no valida'
 
 
+class PagarPopup(Popup):
+    def __init__(self, total, pagado_callback, **kwargs):
+        super(PagarPopup, self).__init__(**kwargs)
+        self.total=total
+        self.pagado=pagado_callback
+        self.ids.total.text= "{:.2f}".format(self.total)
+        self.ids.boton_pagar.bind(on_release=self.dismiss)
+
+    def mostrar_cambio(self):
+        recibido= self.ids.recibido.text
+        try:
+            cambio=float(recibido)-float(self.total)
+            if cambio>=0:
+                self.ids.cambio.text="{:.2f}".format(cambio)
+                self.ids.boton_pagar.disabled=False
+            else:
+                self.ids.cambio.text="Pago menor a cantidad a pagar"
+        except:
+            self.ids.cambio.text="Pago no valido"
+
+class NuevaCompraPopup(Popup):
+    def __init__(self, nueva_compra_callback, **kwargs):
+        super(NuevaCompraPopup, self).__init__(**kwargs)
+        self.nueva_compra=nueva_compra_callback
+        self.ids.aceptar.bind(on_release=self.dismiss)
+
+
 class VentasWindow(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -241,13 +268,47 @@ class VentasWindow(BoxLayout):
 
 
     def pagar(self):
-        print("pagar")
+        if self.ids.rvs.data:
+            popup=PagarPopup(self.total, self.pagado)
+            popup.open()
+        else:
+            self.ids.notificacion_falla.text='No hay nada que pagar'
 
-    def nueva_compra(self):
-        print("nueva_compra")
+    def pagado(self):
+        self.ids.notificacion_exito.text='Compra realizada con exito'
+        self.ids.notificacion_falla.text=''
+        self.ids.total.text="{:.2f}".format(self.total)
+        self.ids.buscar_codigo.disabled=True
+        self.ids.buscar_nombre.disabled=True
+        nueva_cantidad=[]
+        for producto in self.ids.rvs.data:
+            cantidad=producto['cantidad_inventario']-producto['cantidad_carrito']
+            if cantidad>=0:
+                nueva_cantidad.append({'codigo': producto['codigo'], 'cantidad': cantidad})
+            else:
+                nueva_cantidad.append({'codigo': producto['codigo'], 'cantidad': 0})
+        for cantidad in nueva_cantidad:
+            res=next((producto for producto in inventario if producto['codigo']==cantidad['codigo']),None)
+            res['cantidad']=cantidad['cantidad']
+
+
+    def nueva_compra(self, desde_popup=False):
+        if desde_popup:
+            self.ids.rvs.data=[]
+            self.total=0.0
+            self.ids.sub_total.text= '0.00'
+            self.ids.total.text= '0.00'
+            self.ids.notificacion_exito.text=''
+            self.ids.notificacion_falla.text=''
+            self.ids.buscar_codigo.disabled=False
+            self.ids.buscar_nombre.disabled=False
+            self.ids.rvs.refresh_from_data()
+        elif len(self.ids.rvs.data):
+            popup=NuevaCompraPopup(self.nueva_compra)
+            popup.open()
 
     def admin(self):
-        print("Admin presionado")
+        print("inventario:", inventario)
 
     def signout(self):
         print("Signout presionado")
