@@ -1,0 +1,27 @@
+# from kivy.app import App
+# from kivy.uix.boxlayout import BoxLayout
+
+# from sqlqueries import QueriesSQLite
+
+# if __name__=="__main__":
+#     connection = QueriesSQLite.create_connection("pdvDB.sqlite")
+
+#     select_products = "SELECT * from productos"
+#     productos = QueriesSQLite.execute_read_query(connection, select_products)
+#     for producto in productos:
+#         print(producto)
+
+
+#     producto_dict={'codigo': '999', 'nombre': 'refresco 600ml', 'precio': 15.0, 'cantidad': 10}
+#     producto_tuple=tuple(producto_dict.values())
+#     crear_producto = """
+#     INSERT INTO
+#         productos (codigo, nombre, precio, cantidad)
+#     VALUES
+#         (?,?,?,?);
+#     """
+#    QueriesSQLite.execute_query(connection, crear_producto, producto_tuple) 
+#    select_products = "SELECT * from productos"
+#    productos = QueriesSQLite.execute_read_query(connection, select_products)
+#    for producto in productos:
+#        print(producto)

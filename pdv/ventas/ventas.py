@@ -7,6 +7,13 @@ from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivy.uix.popup import Popup
+from kivy.clock import Clock
+from kivy.lang import Builder
+from sqlqueries import QueriesSQLite
+
+Builder.load_file('ventas/ventas.kv')
+
+from datetime import datetime, timedelta
 
 inventario=[
     {'codigo': '111', 'nombre': 'leche 1L', 'precio': 20.0, 'cantidad': 20},
@@ -157,10 +164,12 @@ class ProductoPorNombrePopup(Popup):
         self.agregar_producto=agregar_producto_callback
 
     def mostrar_articulos(self):
+        connection = QueriesSQLite.create_connection("pdvDB.sqlite")
+        inventario_sql=QueriesSQLite.execute_read_query(connection, "SELECT * from productos")
         self.open()
-        for nombre in inventario:
-            if nombre['nombre'].lower().find(self.input_nombre)>=0:
-                producto={'codigo': nombre['codigo'], 'nombre': nombre['nombre'], 'precio': nombre['precio'], 'cantidad': nombre['cantidad']}
+        for nombre in inventario_sql:
+            if nombre[1].lower().find(self.input_nombre)>=0:
+                producto={'codigo': nombre[0], 'nombre': nombre[1], 'precio': nombre[2], 'cantidad': nombre[3]}
                 self.ids.rvs.agregar_articulo(producto)
 
     def seleccionar_articulo(self):
@@ -229,16 +238,24 @@ class VentasWindow(BoxLayout):
         self.total=0.0
         self.ids.rvs.modificar_producto=self.modificar_producto
 
+
+        self.ahora=datetime.now()
+        self.ids.fecha.text=self.ahora.strftime("%d/%m/%y")
+        Clock.schedule_interval(self.actualizar_hora, 1)
+
+
     def agregar_producto_codigo(self, codigo):
-        for producto in inventario:
-            if codigo==producto['codigo']:
+        connection = QueriesSQLite.create_connection("pdvDB.sqlite")
+        inventario_sql=QueriesSQLite.execute_read_query(connection, "SELECT * from productos")
+        for producto in inventario_sql:
+            if codigo==producto[0]:
                 articulo={}
-                articulo['codigo']=producto['codigo']
-                articulo['nombre']=producto['nombre']
-                articulo['precio']=producto['precio']
+                articulo['codigo']=producto[0]
+                articulo['nombre']=producto[1]
+                articulo['precio']=producto[2]
                 articulo['cantidad_carrito']=1
-                articulo['cantidad_inventario']=producto['cantidad']
-                articulo['precio_total']=producto['precio']
+                articulo['cantidad_inventario']=producto[3]
+                articulo['precio_total']=producto[2]
                 self.agregar_producto(articulo)
                 self.ids.buscar_codigo.text=''
                 break
@@ -266,6 +283,9 @@ class VentasWindow(BoxLayout):
             self.total=nuevo_total
             self.ids.sub_total.text='$ '+"{:.2f}".format(self.total)
 
+    def actualizar_hora(self, *args):
+        self.ahora=self.ahora+timedelta(seconds=1)
+        self.ids.hora.text=self.ahora.strftime("%H:%M:%S")
 
     def pagar(self):
         if self.ids.rvs.data:
@@ -280,16 +300,22 @@ class VentasWindow(BoxLayout):
         self.ids.total.text="{:.2f}".format(self.total)
         self.ids.buscar_codigo.disabled=True
         self.ids.buscar_nombre.disabled=True
-        nueva_cantidad=[]
+        self.ids.pagar.disabled=True
+        connection = QueriesSQLite.create_connection("pdvDB.sqlite")
+        actualizar="""
+		UPDATE
+			productos
+		SET
+			cantidad=?
+		WHERE
+			codigo=?
+		"""
         for producto in self.ids.rvs.data:
-            cantidad=producto['cantidad_inventario']-producto['cantidad_carrito']
-            if cantidad>=0:
-                nueva_cantidad.append({'codigo': producto['codigo'], 'cantidad': cantidad})
-            else:
-                nueva_cantidad.append({'codigo': producto['codigo'], 'cantidad': 0})
-        for cantidad in nueva_cantidad:
-            res=next((producto for producto in inventario if producto['codigo']==cantidad['codigo']),None)
-            res['cantidad']=cantidad['cantidad']
+            nueva_cantidad=0
+            if producto['cantidad_inventario']-producto['cantidad_carrito']>0:
+                nueva_cantidad=producto['cantidad_inventario']-producto['cantidad_carrito']
+            producto_tuple=(nueva_cantidad, producto['codigo'])
+            QueriesSQLite.execute_query(connection, actualizar, producto_tuple)
 
 
     def nueva_compra(self, desde_popup=False):
@@ -302,16 +328,29 @@ class VentasWindow(BoxLayout):
             self.ids.notificacion_falla.text=''
             self.ids.buscar_codigo.disabled=False
             self.ids.buscar_nombre.disabled=False
+            self.ids.pagar.disabled=False
             self.ids.rvs.refresh_from_data()
         elif len(self.ids.rvs.data):
             popup=NuevaCompraPopup(self.nueva_compra)
             popup.open()
 
     def admin(self):
-        print("inventario:", inventario)
+        #self.parent.parent.current='scrn_admin'
+        connection = QueriesSQLite.create_connection("pdvDB.sqlite")
+        select_products = "SELECT * from productos"
+        productos = QueriesSQLite.execute_read_query(connection, select_products)
+        for producto in productos:
+            print(producto)
+
 
     def signout(self):
-        print("Signout presionado")
+        if self.ids.rvs.data:
+            self.ids.notificacion_falla.text='Compra abierta'
+        else:
+            self.parent.parent.current='scrn_singin'
+
+    def poner_usuario(self, usuario):
+        self.ids.bienvenido_label.text='Bienvenido '+usuario['nombre']
 
 class VentasApp(App):
     def build(self):
