@@ -30,7 +30,7 @@ class SigninWindow(BoxLayout):
 					self.ids.username.text=''
 					self.ids.password.text=''
 					self.ids.signin_notificacion.text=''
-					if usuario['tipo']=='trabajador':
+					if usuario['tipo']=='trabjador':
 						self.parent.parent.current='scrn_ventas'
 					else:
 						self.parent.parent.current='scrn_admin'
