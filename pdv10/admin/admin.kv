@@ -124,6 +124,59 @@
 		        text: 'Salir sin hacer cambios'
 		        on_press: root.dismiss()
 
+<UsuarioPopup>:
+    size_hint: .5, .5
+    auto_dismiss: False
+    title: ''
+    BoxLayout:
+	    orientation: 'vertical'
+	    padding: .05
+	    Label:
+	    	size_hint_y: .1
+	    	id: usuario_info_1
+	    Label:
+	    	id: no_valid_notif
+	    	size_hint_y: .1
+	    TextInput: 
+			size_hint_y: .2
+			id: usuario_username
+			multiline: False
+			hint_text: 'Username'
+			write_tab: False
+		TextInput: 
+			id: usuario_nombre
+			size_hint_y: .2
+			multiline: False
+			hint_text: 'Nombre'
+			write_tab: False
+		BoxLayout:
+			size_hint_y: .2
+			TextInput:
+				size_hint_x: .5
+				id: usuario_password
+				multiline: False
+				hint_text: 'Password'
+				password: True
+				write_tab: False
+			ToggleButton: 
+				size_hint_x: .25
+				id: admin_tipo
+				text: 'Admin'
+				group: 'usuario_tipo'
+			ToggleButton: 
+				size_hint_x: .25
+				id: trabajador_tipo
+				text: 'Trabajador'
+				group: 'usuario_tipo'
+		BoxLayout:
+			size_hint_y: .2
+		    Button:
+		    	text: 'Aceptar'
+		    	on_release: root.verificar(usuario_username.text, usuario_nombre.text, usuario_password.text, admin_tipo.state, trabajador_tipo.state)
+		    Button:
+		        text: 'Salir sin hacer cambios'
+		        on_press: root.dismiss()
+
 <VistaProductos>:
 	name: 'Productos'
 	BoxLayout:
@@ -166,6 +219,7 @@
 			BotonOscuro:
 				text: 'Eliminar Producto'
 				on_release: root.eliminar_producto()
+
 
 <VistaUsuarios>:
 	name: 'Usuarios'

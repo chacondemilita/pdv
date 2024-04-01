@@ -18,8 +18,8 @@ from datetime import datetime, timedelta
 Builder.load_file('admin/admin.kv')
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
-								RecycleBoxLayout):
-	touch_deselect_last = BooleanProperty(True) 
+                                 RecycleBoxLayout):
+    touch_deselect_last = BooleanProperty(True) 
 
 class SelectableProductoLabel(RecycleDataViewBehavior, BoxLayout):
 	index = None
@@ -34,7 +34,7 @@ class SelectableProductoLabel(RecycleDataViewBehavior, BoxLayout):
 		self.ids['_cantidad'].text = str(data['cantidad'])
 		self.ids['_precio'].text = str("{:.2f}".format(data['precio']))
 		return super(SelectableProductoLabel, self).refresh_view_attrs(
-			rv, index, data)
+            rv, index, data)
 
 	def on_touch_down(self, touch):
 		if super(SelectableProductoLabel, self).on_touch_down(touch):
@@ -61,7 +61,7 @@ class SelectableUsuarioLabel(RecycleDataViewBehavior, BoxLayout):
 		self.ids['_username'].text = data['username']
 		self.ids['_tipo'].text = str(data['tipo'])
 		return super(SelectableUsuarioLabel, self).refresh_view_attrs(
-			rv, index, data)
+            rv, index, data)
 
 	def on_touch_down(self, touch):
 		if super(SelectableUsuarioLabel, self).on_touch_down(touch):
@@ -90,7 +90,7 @@ class ItemVentaLabel(RecycleDataViewBehavior, BoxLayout):
 		self.ids['_precio_por_articulo'].text = str("{:.2f}".format(data['precio']))+" /artículo"
 		self.ids['_total'].text= str("{:.2f}".format(data['total']))
 		return super(ItemVentaLabel, self).refresh_view_attrs(
-			rv, index, data)
+            rv, index, data)
 
 # esto es nuevo tambien en kv
 class SelectableVentaLabel(RecycleDataViewBehavior, BoxLayout):
@@ -107,7 +107,7 @@ class SelectableVentaLabel(RecycleDataViewBehavior, BoxLayout):
 		self.ids['_time'].text = str(data['fecha'].strftime("%H:%M:%S"))
 		self.ids['_date'].text = str(data['fecha'].strftime("%d/%m/%Y"))
 		return super(SelectableVentaLabel, self).refresh_view_attrs(
-			rv, index, data)
+            rv, index, data)
 
 	def on_touch_down(self, touch):
 		if super(SelectableVentaLabel, self).on_touch_down(touch):
@@ -124,23 +124,23 @@ class SelectableVentaLabel(RecycleDataViewBehavior, BoxLayout):
 
 
 class AdminRV(RecycleView):
-	def __init__(self, **kwargs):
-		super(AdminRV, self).__init__(**kwargs)
-		self.data=[]
+    def __init__(self, **kwargs):
+        super(AdminRV, self).__init__(**kwargs)
+        self.data=[]
 
-	def agregar_datos(self,datos):
-		for dato in datos:
-			dato['seleccionado']=False
-			self.data.append(dato)
-		self.refresh_from_data()
+    def agregar_datos(self,datos):
+        for dato in datos:
+            dato['seleccionado']=False
+            self.data.append(dato)
+        self.refresh_from_data()
 
-	def dato_seleccionado(self):
-		indice=-1
-		for i in range(len(self.data)):
-			if self.data[i]['seleccionado']:
-				indice=i
-				break
-		return indice
+    def dato_seleccionado(self):
+        indice=-1
+        for i in range(len(self.data)):
+            if self.data[i]['seleccionado']:
+                indice=i
+                break
+        return indice
 
 class ProductoPopup(Popup):
 	def __init__(self, agregar_callback, **kwargs):
@@ -388,11 +388,11 @@ class VistaUsuarios(Screen):
 			connection=QueriesSQLite.create_connection("pdvDB.sqlite")
 			actualizar = """
 			UPDATE
-			usuarios
+			  usuarios
 			SET
-			nombre=?, password=?, tipo = ?
+			  nombre=?, password=?, tipo = ?
 			WHERE
-			username = ?
+			  username = ?
 			"""
 			QueriesSQLite.execute_query(connection, actualizar, usuario_tuple)
 			self.ids.rv_usuarios.data[indice]['nombre']=validado['nombre']
@@ -419,22 +419,11 @@ class VistaUsuarios(Screen):
 
 # igual esto es nuevo tambien en kv
 class InfoVentaPopup(Popup):
-	connection=QueriesSQLite.create_connection("pdvDB.sqlite")
-	select_item_query=" SELECT nombre FROM productos WHERE codigo = ?  "
 	def __init__(self, venta, **kwargs):
-		super(InfoVentaPopup, self).__init__(**kwargs)
-		self.venta=[{"codigo": producto[3], "producto": QueriesSQLite.execute_read_query(self.connection, self.select_item_query, (producto[3],))[0][0], "cantidad": producto[4], "precio": producto[2], "total": producto[4]*producto[2]} for producto in venta]
-		
+		super(InfoVentaPopup, self).__init__(**kwargs)	
+
 	def mostrar(self):
-		self.open()
-		total_items=0
-		total_dinero=0.0
-		for articulo in self.venta:
-			total_items+=articulo['cantidad']
-			total_dinero+=articulo['total']
-		self.ids.total_items.text=str(total_items)
-		self.ids.total_dinero.text="$"+str("{:.2f}".format(total_dinero))
-		self.ids.info_rv.agregar_datos(self.venta)
+		pass
 
 # nueva clase creada y tabien en kv
 class VistaVentas(Screen):
@@ -446,16 +435,12 @@ class VistaVentas(Screen):
 		pass
 
 	def mas_info(self):
-		indice=self.ids.ventas_rv.dato_seleccionado()
-		if indice>=0:
-			venta=self.productos_actuales[indice]
-			p=InfoVentaPopup(venta)
-			p.mostrar()
+		pass
 
 	def cargar_venta(self, choice='Default'):
 			connection = QueriesSQLite.create_connection("pdvDB.sqlite")
 			valid_input=True
-			final_sum=0
+			#final_sum=0
 			f_inicio=datetime.strptime('01/01/00', '%d/%m/%y')
 			f_fin=datetime.strptime('31/12/2099', '%d/%m/%Y')
 
@@ -465,72 +450,57 @@ class VistaVentas(Screen):
 			select_ventas_query = """ SELECT * FROM ventas WHERE fecha BETWEEN ? AND ? """
 			selec_productos_query = """ SELECT * FROM ventas_detalle WHERE id_venta=? """
 
-			self.ids.ventas_rv.data=[]
+			#self.ids.ventas_rv.data=[]
 			if choice=='Default':
 					f_inicio=datetime.today().date()
 					f_fin=f_inicio+timedelta(days=1)
 					self.ids.date_id.text=str(f_inicio.strftime("%d-%m-%y"))
-			elif choice=='Date':
-				date=self.ids.single_date.text
-				try:
-						f_elegida=datetime.strptime(date,'%d/%m/%y')
-				except:
-					valid_input=False
-				if valid_input:
-					f_inicio=f_elegida
-					f_fin=f_elegida+timedelta(days=1)
-					self.ids.date_id.text=f_elegida.strftime('%d-%m-%y')
-				else:
-					if self.ids.initial_date.text:
-						initial_date=self.ids.initial_date.text
-						try:
-							f_inicio=datetime.strptime(initial_date,'%d/%m/%y')
-						except:
-							valid_input=False
-
-					if self.ids.last_date.text:
-						last_date=self.ids.last_date.text
-						try:
-							f_fin=datetime.strptime(last_date, '%d/%m/%y')
-						except:
-							valid_input=False
-
-					if valid_input:
-						self.ids.date_id.text=f_inicio.strftime("%d-%m-%y")+" - " +f_fin.strftime("%d-%m-%y")
-
+			
 			if valid_input:
 				inicio_fin=(f_inicio, f_fin)
 				ventas_sql=QueriesSQLite.execute_read_query(connection, select_ventas_query, inicio_fin)
 				if ventas_sql:
 					for venta in ventas_sql:
-						final_sum+=venta[1]	
-						ventas_detalle_sql=QueriesSQLite.execute_read_query(connection, selec_productos_query,(venta[0],))
-						_total_productos.append(ventas_detalle_sql)
-						count=0
-						for producto in ventas_detalle_sql:
-							count+=producto[4]
-
-						_ventas.append({"username": venta[3], "productos": count, "total": venta[1], "fecha": datetime.strptime(venta[2],'%Y-%m-%d %H:%M:%S.%f')})
+						_ventas.append({"username": venta[3], "productos": 1, "total": venta[1], "fecha": datetime.strptime(venta[2],'%Y-%m-%d %H:%M:%S.%f')})
 					self.ids.ventas_rv.agregar_datos(_ventas)
-					self.productos_actuales=_total_productos
-				self.ids.final_sum.text='$'+str("{:2f}".format(final_sum))
-				self.ids.initial_date.text=''
-				self.ids.last_date.text=''
-				self.ids.single_date.text=''
-							
-						
+
+			#elif choice=='Date':
+					#date=self.ids.single_date.text
+					#try:
+							#f_elegida=datetime.strptime(date,'%d/%m/%y')
+					#except:
+							#valid_input=False
+					#if valid_input:
+							#f_inicio=f_elegida
+							#f_fin=f_elegida+timedelta(days=1)
+							#self.ids.date_id.text=f_elegida.strftime("%d-%m-%y")
+			#else:
+					#if self.ids.initial_date.text:
+						#initial_date=self.ids.initial_date.text
+						#try:
+								#f_inicio=datetime.strptime(initial_date, '%d/%m/%y')
+						#except:
+								#valid_input=False
+					#if self.ids.last_date.text:
+							#last_date=self.ids.last_date.text
+							#try:
+									#f_fin=datetime.strptime(last_date, '%d/%m/%y')
+							#except:
+								#valid_input=False
+					#if valid_input:
+							#self.ids.date_id.text=f_inicio.strftime("%d-%m-%y")+" - "+f_fin.strftime("%d-%m-%y")	
 
 
 #import dropdown tambien!!!
 #agregado customdropdown y tambien en kv y selectablesale label
 class CustomDropDown(DropDown):
-		def __init__(self, cambiar_callback, **kwargs):
-				self._succ_cb = cambiar_callback
-				super(CustomDropDown, self).__init__(**kwargs)
+	def __init__(self, cambiar_callback, **kwargs):
+		self._succ_cb = cambiar_callback
+		super(CustomDropDown, self).__init__(**kwargs)
 
-		def vista(self, vista):
-				if callable(self._succ_cb):
-						self._succ_cb(True, vista)
+	def vista(self, vista):
+		if callable(self._succ_cb):
+			self._succ_cb(True, vista)
 
 
 #agregado self.dropdown = CustomDropdown
@@ -567,4 +537,4 @@ class AdminApp(App):
 		return AdminWindow()
 
 if __name__=="__main__":
-	AdminApp().run() 
+    AdminApp().run() 

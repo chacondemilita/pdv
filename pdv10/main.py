@@ -9,16 +9,16 @@ from ventas.ventas import VentasWindow
 class MainWindow(BoxLayout):
 	def __init__(self, **kwargs):
 		super().__init__(*kwargs)
-		self.ventas_widget=VentasWindow()
-		self.signin_widget=SigninWindow(self.ventas_widget.poner_usuario)
 		self.admin_widget=AdminWindow()
+		self.ventas_widget=VentasWindow(self.admin_widget.actualizar_productos)
+		self.signin_widget=SigninWindow(self.ventas_widget.poner_usuario)
 		self.ids.scrn_signin.add_widget(self.signin_widget)
 		self.ids.scrn_ventas.add_widget(self.ventas_widget)
 		self.ids.scrn_admin.add_widget(self.admin_widget)
 
 class MainApp(App):
 	def build(self):
-		return MainWindow()
+			return MainWindow()
 
 if __name__=="__main__":
 	MainApp().run()

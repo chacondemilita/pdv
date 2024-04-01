@@ -18,19 +18,20 @@ class SigninWindow(BoxLayout):
 			self.ids.signin_notificacion.text='Falta nombre de usuario y/o contraseña'
 		else:
 			usuario={}
-			for user in users:
-				if user[0]==username:
-					usuario['nombre']=user[1]
-					usuario['username']=user[0]
-					usuario['password']=user[2]
-					usuario['tipo']=user[3]
-					break
+			if users: # agregado!!!
+					for user in users:
+							if user[0]==username:
+									usuario['nombre']=user[1]
+									usuario['username']=user[0]
+									usuario['password']=user[2]
+									usuario['tipo']=user[3]
+									break
 			if usuario:
 				if usuario['password']==password:
 					self.ids.username.text=''
 					self.ids.password.text=''
 					self.ids.signin_notificacion.text=''
-					if usuario['tipo']=='trabjador':
+					if usuario['tipo']=='trabajador':
 						self.parent.parent.current='scrn_ventas'
 					else:
 						self.parent.parent.current='scrn_admin'

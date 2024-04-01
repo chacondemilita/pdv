@@ -233,10 +233,11 @@ class NuevaCompraPopup(Popup):
 
 
 class VentasWindow(BoxLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, actualizar_productos_callback, **kwargs):
         super().__init__(**kwargs)
         self.total=0.0
         self.ids.rvs.modificar_producto=self.modificar_producto
+        self.actualizar_productos=actualizar_productos_callback
 
         self.ahora=datetime.now()
         self.ids.fecha.text=self.ahora.strftime("%d/%m/%y")
@@ -309,12 +310,15 @@ class VentasWindow(BoxLayout):
         WHERE
             codigo=?
         """
+        actualizar_admin=[]
         for producto in self.ids.rvs.data:
             nueva_cantidad=0
             if producto['cantidad_inventario']-producto['cantidad_carrito']>0:
                 nueva_cantidad=producto['cantidad_inventario']-producto['cantidad_carrito']
             producto_tuple=(nueva_cantidad, producto['codigo'])
+            actualizar_admin.append({'codigo': producto['codigo'], 'cantidad': nueva_cantidad})
             QueriesSQLite.execute_query(connection, actualizar, producto_tuple)
+        self.actualizar_productos(actualizar_admin)
 
 
 
@@ -351,10 +355,14 @@ class VentasWindow(BoxLayout):
 
     def poner_usuario(self, usuario):
         self.ids.bienvenido_label.text='Bienvenido '+usuario['nombre']
-        if usuario['tipo']=='trabjador':
+        if usuario['tipo']=='trabajador':
             self.ids.admin_boton.disabled=True
+            self.ids.admin_boton.text=''
+            self.ids.admin_boton.opacity=0
         else:
             self.ids.admin_boton.disabled=False
+            self.ids.admin_boton.text='Admin'
+            self.ids.admin_boton.opacity=1
 
 
 class VentasApp(App):

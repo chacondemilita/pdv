@@ -86,22 +86,7 @@ class QueriesSQLite:
 
 
 if __name__=="__main__":
-    from datetime import datetime, timedelta
     connection = QueriesSQLite.create_connection("pdvDB.sqlite")
-
-    
-    fecha1=datetime.today()-timedelta(days=55)
-    neuva_data=(fecha1, 2)
-    actualizar = """
-
-    UPDATE
-       ventas
-    SET
-       fecha=?
-    WHERE
-      id = ?
-      """
-    QueriesSQLite.execute_query(connection, actualizar, neuva_data)
 
     select_ventas = "SELECT * from ventas"
     ventas = QueriesSQLite.execute_read_query(connection, select_ventas)
